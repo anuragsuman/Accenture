@@ -1,0 +1,39 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Accenture Test",
+		"_postman_id": "ba82c2bc-d6ef-db84-7af9-8f9c07db03c0",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/targetNumbers",
+			"request": {
+				"url": "http://localhost:8080/targetNumbers",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/numbers",
+			"request": {
+				"url": "http://localhost:8080/numbers",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

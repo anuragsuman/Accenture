@@ -1,0 +1,5 @@
+package com.mgl.digital.sds.scrapper.app.controller;
+
+public class NumberController {
+
+}

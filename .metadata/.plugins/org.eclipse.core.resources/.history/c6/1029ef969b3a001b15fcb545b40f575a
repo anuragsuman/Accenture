@@ -1,0 +1,17 @@
+package com.mgl.digital.sds.scrapper.app.service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+public class ab {
+
+	public static void main(String[] args) {
+		List<Integer> OneToThousandDigit = IntStream.range(1, 1000).boxed().collect(Collectors.toList());
+        OneToThousandDigit.stream().filter(i -> i % 3 == 0 || i % 5 == 0).map(e->e*e).distinct().limit(10).forEach(e-> System.out.println(e));
+
+
+
+	}
+
+}
