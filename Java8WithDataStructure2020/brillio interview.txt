@@ -105,6 +105,8 @@ class A
 			System.out.println("In m2 A");
 		}
 	}
+	
+//if same object trying to access m1 method then 	
 String s1="Hello";
 	String s2="Hello";
 	String s3="Hello";
