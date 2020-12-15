@@ -1,0 +1,121 @@
+
+
+Zoom Group Chat
+nitya.kashyap@BRILLIO.COM
+To
+Everyone
+1:36:06 AM
+@FunctionalInterface
+	public interface Test<A, B, C> {
+		public C apply(A a, B b);
+	 
+		default void printString() {
+			System.out.println("hello");
+		}
+	} 
+String[] str  = {"Madhu", "Sandhya", "Pramod", "alex"};
+class A { 
+	static int i; 
+	int j; 
+	
+	static { 
+		i = 10; 
+		System.out.println("Hello corona World"); 
+	} 
+} 
+
+class Main { 
+	public static void main(String args[]) { 
+		System.out.println(A.i); 
+	} 
+} 
+class Test { 
+    static int i; 
+    int j; 
+    static { 
+        i = 10; 
+        System.out.println("World "); 
+    } 
+    Test(){ 
+        System.out.println("Hello"); 
+    } 
+} 
+  
+class Main { 
+    public static void main(String args[]) { 
+  
+       Test t1 = new Test(); 
+       Test t2 = new Test(); 
+    } 
+} 
+class A
+			{
+				void m1()
+				{
+					System.out.println("In m1 A");
+				}
+			}
+			class B extends A
+			{
+				void m1()
+				{
+					System.out.println("In m1 B");
+				}
+				void m2()
+				{
+					System.out.println("In m2 B");
+				}
+			}
+			public class Test {
+			 
+				public static void main(String[] args) {
+					A a=new B();
+					a.m2();
+				}
+			}
+ class A
+    {
+        void m1() throws ArrayIndexOutOfBoundsException
+        {
+            System.out.println("In m1 A");
+        }
+    }
+    class B extends A
+    {
+        void m1() throws IndexOutOfBoundsException
+        {
+            System.out.println("In m1 B");
+        }
+    }
+    public class Test {
+     
+        public static void main(String[] args) {
+            A a=new B();
+            a.m1();
+        }
+    }
+class A
+	{
+		synchronized void m1()
+		{
+			System.out.println("In m1 A");
+		}
+		void m2()
+		{
+			System.out.println("In m2 A");
+		}
+	}
+String s1="Hello";
+	String s2="Hello";
+	String s3="Hello";
+TRANSITIVE DEPENDENCY
+@SpringBootApplication
+	@EnableAutoConfiguration
+	@ComponentScan
+	@Configuration
+	public class Test {
+	
+	}
+To:
+Type message here ...
+

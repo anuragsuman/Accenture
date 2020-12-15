@@ -1,5 +1,8 @@
 package com.mgl.digital.sds.scrapper.app.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -8,23 +11,21 @@ import org.springframework.stereotype.Service;
  * should return
  * [1, 3]
  */
+
 @Service
 public class YourTargetNumberService implements TargetNumberService {
-    int[] resultIndex = new int[2];
-    
-    @Override
-    public int[] indices(int[] arr, int target) {
-       
-    	for(int i =0; i<arr.length;i++) {
-    		for(int j =0; j<arr.length;j++) {
-        		if(arr[i]+arr[j]==target) {
-        			resultIndex[0]= i;
-        			resultIndex[1]=j;
-        			break;
-        		}
-        	}
-    	}
-    	
-        return resultIndex;
-    }
+
+	@Override
+	public int[] indices(int[] arr, int target){
+		Map<Integer,Integer> numMap = new HashMap<Integer,Integer>(2);
+		for(int i =0; i<arr.length;i++) {
+			int complement = target - arr[i];
+			if(numMap.containsKey(complement)) {
+				return new int[] {numMap.get(complement),i};
+			}else {
+				numMap.put(arr[i], i);
+			}
+		}
+		throw new IllegalStateException("wrong input");
+	}
 }

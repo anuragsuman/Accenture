@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
+	<section name="org.eclipse.m2e.core.pom.dependencies">
+	</section>
+	<section name="org.eclipse.m2e.core.pom.overview">
+	</section>
 	<section name="MavenProjectImportWizardPage">
 		<list key="rootDirectory">
+			<item value="D:\PUC_2020_Project\springbootdemo"/>
 			<item value="D:\PUC_2020_Project\Program1"/>
 		</list>
 		<list key="projectNameTemplate">
