@@ -1320,3 +1320,6 @@ Caused by: java.io.IOException: Error writing request body to server
 
 !ENTRY org.eclipse.egit.ui 4 0 2021-01-03 19:33:22.687
 !MESSAGE Can't connect to any repository: https://github.com/anuragsuman/Accenture.git (https://github.com/anuragsuman/Accenture.git: Error writing request body to server)
+
+!ENTRY org.eclipse.jface.text 2 0 2021-01-03 19:37:33.970
+!MESSAGE Duplicate template id: 'org.eclipse.wst.xslt.templates.xpath.boolean'
