@@ -1,0 +1,63 @@
+===================================================================================================================================
+=====Consumer,Predicate,Supplier,Runnable, ActionListener, Comparable=====Types of Functional Interface=============
+	
+	-----------------------------------------------------------------------------------------------------------------------------------
+	Consumer:
+    static Consumer<CollegeStudent> nameDisplay = CollegeStudent -> System.out.println(CollegeStudent.getName());
+	
+	static Consumer<CollegeStudent> activitiesDisplay = CollegeStudent -> System.out.println(CollegeStudent.getActivities());
+	-----------------------------------------------------------------------------------------------------------------------------------
+	Predicate:
+		In Java 8, Predicate is a functional interface, which accepts an argument and returns a boolean
+		example : filter() method from Stream interface. 
+				  Stream<T> filter(Predicate<? super T> predicate);
+	
+		static Predicate<CollegeStudent> filterOnGrade = CollegeStudent -> CollegeStudent.getGrade() > 2;
+		
+		// static Predicate<CollegeStudent> filterOnGpa = CollegeStudent -> CollegeStudent.getGpa() >= 3.5;
+		static Predicate<CollegeStudent> filterOnGpa = ConsumerEx :: filterCollegeStudentsOnGpa;
+	-----------------------------------------------------------------------------------------------------------------------------------
+	Supplier:
+	
+	static Supplier<List<CollegeStudent>> CollegeStudentsFromRepository = () -> CollegeStudentRepository.getCollegeStudents();
+===================================================================================================================================
+	java.util.function Package:
+			The java.util.function package in Java 8 contains many builtin functional interfaces like-
+			
+			(1).Predicate: The Predicate interface has an abstract method test which gives a Boolean value as a result for the specified argument. Its prototype is
+				public interface Predicate
+				{
+				   public boolean test(T  t);
+				 }
+			(2).BinaryOperator: The BinaryOperator interface has an abstract method apply which takes two argument and returns a result of same type. Its prototype is
+				public interface BinaryOperator 
+				{
+				     public T apply(T x, T y);
+				}       
+			(3).Function: The Function interface has an abstract method apply which takes argument of type T and returns a result of type R. Its prototype is
+				public interface Function 
+				{
+				   public R apply(T t);
+				   default T andThen(R);
+				}
+		
+==================================================================================================================================
+Function : 
+
+	static Function<String, String> upperCase = str -> str.toUpperCase();
+	
+	static Function<String, String> addSomeString = str -> str.concat("dummy");
+	
+	public static void main(String args[]) {
+		System.out.println(upperCase.apply("Hello"));
+		
+		System.out.println(addSomeString.andThen(upperCase).apply("Hello"));
+	}
+===================================================================================================================================
+list 1-10 
+list 2-11
+
+
+List<Object> objected = list.stream().filter(Comparator.comparing(list1,list2,new List())).collect(Collection.toList());
+
+

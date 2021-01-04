@@ -1,0 +1,106 @@
+list : 
+
+list.stream().map((e)->{
+   if(e%2!=0){
+       return e;
+   }
+}).forEach((e)-> System.out.println(e));
+
+===========================================================
+Lambda Expression
+Optional
+LocalDate and Zoned
+Stream API
+
+-----------------------------------------
+
+class Producer {
+
+ produce(List list){
+     list.add(A);
+	 list.add(b);
+	 
+	 while(list.size == max){
+	   synchoronized(Producer.class){
+	         wait();
+	   }
+	      
+	 }
+	 
+  }
+}
+
+
+class Consumer{
+
+   synchorconsume(List list){
+       while(list.size == empty){
+	       notify();
+	   }
+  }
+}
+
+clss Main{
+
+
+
+psvm(){
+   list :  
+
+   Thread 1 -> procu;
+   Thread 2 -> 
+]
+
+}
+============================================================================================
+       class A{
+	   
+	      psvm{
+		  
+		     for(){   : By using Stack
+			    if(){     
+				}
+			 }
+		  }
+	   
+	   }
+	   
+	   
+	   
+	   public Map<String,boolean> checkBrackets(String  input){
+	       
+	   
+	   }
+
+============================================================================================
+1 2 3 5 7 9 
+
+------------------------------------------------------
+recursion on 
+
+delete : 2
+
+                                             2
+public void deleteNodeFromEnd(Node temp, int k){
+
+     int count =0;
+	 int length=0; int end = 0;
+	 int tail;
+	 
+	 //getting the index where we want to delete
+	 while(count < end-1 ){
+	    count ++;
+		length ++;
+		deleteNodeFromEnd(temp.next,k);
+		if( temp.next == null){
+		     end = length -k;
+		}
+		temp = temp.next; // 7 
+     }
+	 temp.next = temp.next.next;
+	 
+}
+
+ 
+
+

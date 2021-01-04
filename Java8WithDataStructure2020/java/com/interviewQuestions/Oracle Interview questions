@@ -1,0 +1,96 @@
+class Credit{
+
+    creaid(int amount){
+	
+	    if(amount<1000){
+		     amount = amount+10000;
+			 wait
+		}else{
+		  new Dbit().notifyAll();
+		}
+	}
+
+}
+
+
+class Debit{
+      sync debit(int amount){
+	 
+	 
+	 
+	 
+	    Synchor(Debit.class){
+			if(amount< balance){
+				 //debit
+				 wait
+			}else{
+			
+			}
+		}
+	}
+
+}
+
+
+class CreditDebitMain{
+  int amount = 1000;
+
+psvm(){
+
+      new Thread(new Runnable(){
+	      run(){
+		        debit(amount); 
+		  }
+	  
+	  }).start;
+	  
+	   new Thread(new Runnable(){
+	      run(){
+		        credit(amount); 
+		  }
+	  
+	  }).start;
+
+}
+
+
+}
+
+
+=================================================
+
+final class String1 extends String{
+      
+	
+    
+}
+
+=================================================================================
+Student            Dept
+-----------------------------
+
+a  cse  1          
+x  ec   null       
+
+Select s.*,d.dept_name from Student s , Dept d where s.dept_id=d.id or s.dep_id is null;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

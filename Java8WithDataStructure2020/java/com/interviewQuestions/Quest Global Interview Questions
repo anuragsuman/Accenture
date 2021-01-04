@@ -1,0 +1,188 @@
+List of users, filter out the user id in a sorted way
+
+List<User> listUser = new ArrayList();
+
+listUser.stream().sorted((e1,e2)-> e1.getId()- e2.getId()).collect(Collections.toList());
+
+multiple project
+
+admin module - > Business module
+
+@Inject
+private AdminService adminService;
+
+@PostMapping("url")
+public ResponseEntiry<Admin> postAdminData(@RequestParam("") Admin admin){
+            rest.postMapp(url,header);
+            adminService.postAdminData(admin);
+}
+
+interface AdminService{
+    postAdmin(Admin admin);
+
+}
+
+@Service
+public class AdminServiceImpl implement AdminService{
+
+    @Inject
+    private AdminRepository adminReposit;
+
+   @Override 
+   postAdmin(Admin admin){
+      adminReposit.saveOrUPdate(admin);
+   }
+}
+
+@SpriingBootApplication{
+
+   main();
+   
+   RestTempltemp temp;
+
+}
+
+
+class Test extends Thread { 
+public void run() //child thread
+    { 
+        System.out.println("Run"); 
+    } 
+}
+
+ class Myclass extends Thread{ 
+    public static void main(String[] args) //main thread
+    { 
+        
+        new Thread(){
+            void run(){
+                Syso("run");
+            }
+        }.start();
+    } 
+} 
+
+String 01/01/2020 to timestamp, joda time
+Jan 01 2020
+
+Zoda
+
+
+String s1 = "Testing"
+
+String s2 = new String ("Testing")
+
+s1==s2 and s1.equals(s2)
+false        true
+
+
+select * from users where username = "Test%" and active = 1;
+
+hiberante
+jbdc
+spring jdbc
+spring jpa
+
+datasouce ;
+
+@Query("select * from users where username = ? and active =?;")
+findByUsernameAndActive(Username , active);
+
+
+try(FileStrema ot, Database daabse){
+
+
+}
+
+---------------------------------------------------
+thread 1 thread 2
+
+class a {
+
+public static synchronized m1(){
+    Syso("gggs");    
+        
+}
+}
+
+Thread1 thread = new Thread1();//onjecy
+
+
+Thread1 thread2 = new Thread1();//onjecy 
+
+1). class locking 
+
+
+    
+=================================================================================================================
+
+{
+   "employee":
+   [{
+      "name":"nanda1",
+      "age":"35"
+   },
+{
+      "name":"nanda2",
+      "age":"40"
+   },
+{
+      "name":"nanda3",
+      "age":"50"
+   }
+}
+]
+
+
+ GET    localhost:8080/employee/getEmployee    send
+ 
+       raw body
+
+@RestController
+@RequestMapping("employee")
+public class EmployeeController{
+
+	@Inject  
+  EmployeeService employeeService;
+	
+   @GetMapping("/getEmployee")
+   @Produce("application/json")
+   public ResponseEntity<List<Employee>> calculateAvgAgeOFEmployee(@RequestBody List<Employee> empList){
+   		
+    return  ResponseEntity.ok().body(employeeService.calculateAvgAgeOFEmployee(emplist));
+      
+   }
+   
+}
+
+Interface EmployeeService{
+		
+}
+
+class EmployeeServiceImpl imple EmployeeService{
+
+	public List<Employee> calculateAvgAgeOFEmployee(Emplist emplist){
+  				
+          List<Employee> list = emplist.stream().map(Employee:getAge).Collect(Comparator.average((e)->e.getAge()));
+          
+          return list;
+  }
+
+}
+
+
+Employee {
+
+private SerailId = ;
+
+@Id
+private int id;
+
+
+}
+
+
+
+
+
+

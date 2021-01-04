@@ -1,0 +1,135 @@
+@RestController
+class CustomerResource{
+
+@Inject
+private CustomerService customerService;
+
+@PostMapping
+@Produce("application/xml")
+public ReposneEntiry<Customer> postCustomer(@ResposeBody Customer customer){
+
+        customerService.saveCustomer(customer);
+		
+		ReespoE.ok().boduy(customer);
+
+}
+
+
+}
+
+
+private interface CustomerService{
+ Customer saveCustomer(customer);
+
+}
+
+@Service
+private class CustomerServiceImpl implements CustomerService{
+
+ @Inject
+ CustomerRepository customerRepositry;
+ 
+ Customer saveCustomer(customer){
+       
+	customerRepositry.saveAndUpdate(customer);
+ }
+
+}
+@Repository
+interface CustomerRepository implements JPARepositroy<Long,Customer>{
+
+
+}
+
+
+
+=============================================
+
+String abc ="abc";
+
+
+
+
+
+
+class LinkedList{
+
+Node node;
+
+class Node{
+	int data;
+	Node prev, Node for;
+	Node nextNode;
+	Node(int data){
+	     this.data = data;
+		 this.nextNode = null;
+	}
+}
+
+
+public static void main(String args[]){
+     Node firstNode  = new Node(1);
+}
+}
+
+
+
+
+===============================================
+
+
+
+
+
+class Main {
+public static void main(String args[]){
+		Integer a =30;//
+		Integer b = 45;
+		
+		Syso(print a and b)// 30 45
+		swapeFunction(a,b);
+		Syso(print a and b) // 45 30
+}
+   swape(Integer ){
+   
+      Integer c = a;
+	  a =b;
+	  b =c;
+	  Syso(print a and b) 
+   
+
+
+}
+
+
+wrapper class store the address in memory?
+  --> memory is not allocated for the wrapper object
+===================================================
+FileReader fileReder = new FileRedare("D:/Test.txt");
+
+int i ; 
+String s = "abc";
+String temp="";
+whicle(fileReder.read()){
+     
+	temp =temp+" "+ (char)i;
+Styo((char)i);
+
+}
+
+String s1[] = temp.split(" ");
+int count = 0;
+for(String d: s1){
+if(d.equals(s)){
+   count++;
+}
+}
+
+
+Syso(count);
+
+==========================================================
+
+what is the cluster?
+
+where we have deployed our project?
