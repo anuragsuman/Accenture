@@ -1,7 +1,7 @@
 package DataStructures.Arrays;
 
 public class TicTacToe {
-    private static final int X = 1;
+    private static final int X =  1;
     private static final int O = -1;
     private int[][] board = new int[3][3];
     private static final int EMPTY = 0;
@@ -83,23 +83,5 @@ public class TicTacToe {
         String[] outcome = {"O wins", "Tie", "X wins"}; // rely on ordering
         System.out.println(outcome[1 + winner]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

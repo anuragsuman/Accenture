@@ -25,7 +25,7 @@ public class ClosestNumbers {
 
     public static void main(String[] args) {
 
-        int[] array = {1, 5, 20, 23, 4, -1, -47, 45, 46};
+        int[] array = {8, 5, 20, 23, 4, -1, -47, 45, 46};
         findPair(array);
 
     }

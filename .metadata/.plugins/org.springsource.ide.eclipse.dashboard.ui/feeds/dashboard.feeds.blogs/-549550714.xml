@@ -5,7 +5,159 @@
   <link rel="self" href="https://spring.io/blog.atom" />
   <id>http://spring.io/blog.atom</id>
   <icon>https://spring.io/favicon.ico</icon>
-  <updated>2020-12-31T02:45:36Z</updated>
+  <updated>2021-01-06T00:00:00Z</updated>
+  <entry>
+    <title>YMNNALFT: Reactive Dataflow with Project Reactor</title>
+    <link rel="alternate" href="https://spring.io/blog/2021/01/06/ymnnalft-reactive-dataflow-with-project-reactor" />
+    <category term="engineering" label="Engineering" />
+    <author>
+      <name>Josh Long</name>
+    </author>
+    <id>tag:spring.io,2020-12-30:4317</id>
+    <updated>2021-01-06T00:00:00Z</updated>
+    <content type="html">&lt;p&gt;Welcome to another installment of &lt;em&gt;You May Not Need Another Library For That&lt;/em&gt; (YMNNALFT)! I&amp;rsquo;ve spent a lot of time since 2016 illuminating (or trying to, anyway!) some of the more enormous opportunities in the Spring ecosystem in &lt;a href="http://bit.ly/spring-tips-playlist"&gt;my Spring Tips videos&lt;/a&gt;. Today, however, I come to you in a different spirit, wanting to focus on the little, sometimes hidden, gems that do fantastic things and that might spare you an additional third-party dependency and its implied complexity. &lt;/p&gt;
+&lt;p&gt;And it&amp;rsquo;s a good thing we&amp;rsquo;re covering some of these complexity-reducing gems, too, you see, because the world is a confusing, complex, and dizzying place, and nowhere is that more evident than in the world of reactive data stream composition. Life comes at you fast and data, even more so. Data originates from everything (network services, databases, in-memory computation, threaded code, etc.). Data comes in many different sizes and shapes (one record, ten records, infinite records, etc.). Data comes in different volumes, starving or overwhelming its consumers. Data arrives at different cadences and times: now, later, all at once, periodically, etc. It&amp;rsquo;s much more natural to talk about data that&amp;rsquo;s already in memory, in hand, so to speak, than data that hasn&amp;rsquo;t yet materialized. And it&amp;rsquo;s more natural to talk about data in the single-threaded case than to deal with it in the concurrent case. &lt;/p&gt;
+&lt;img src = "https://media1.tenor.com/images/e6494f3096cf60a3832e0775936bf9cb/tenor.gif" /&gt;
+&lt;p&gt;It&amp;rsquo;s confusing to think about! Historically, it&amp;rsquo;s been even more tedious to address the different data dimensions in code. That is, until reactive programming.&lt;/p&gt;
+&lt;p&gt;Reactive programming offers a unified world view, allowing us to think about the messy world of (potentially asynchronous and potentially concurrent) integration in terms of an easy to use DSL with operators. The operators support the definition and composition of reactive stream data flow pipelines. Reactive programming offers a structured concurrency paradigm, greatly simplifying writing safe, scalable, resource-efficient code. &lt;/p&gt;
+&lt;p&gt;There are some great libraries out there (like &lt;a href="https://github.com/ReactiveX/RxJava"&gt;RxJava&lt;/a&gt; and &lt;a href="https://doc.akka.io/docs/akka/current/stream/index.html"&gt;Akka Streams&lt;/a&gt;) that work in much the same way. If you haven&amp;rsquo;t got a particular one in mind but want a world-class option and are already using Spring, then you might as well use &lt;a href="http://ProjectReactor.io"&gt;Project Reactor&lt;/a&gt;. It&amp;rsquo;s included in the box!&lt;/p&gt;
+&lt;p&gt;The Spring team developed Project Reactor to support the reactive efforts in the Spring ecosystem. You don&amp;rsquo;t need Spring to use Project Reactor, but all the reactive APIs in the Spring ecosystem build on Project Reactor for the dataflow options. Microsoft &lt;a href="https://azure.github.io/azure-sdk/java_introduction.html#async-service-clients"&gt;mandates&lt;/a&gt; that all their SDK clients and APIs be created using &lt;a href="https://devblogs.microsoft.com/azure-sdk/async-programming-with-project-reactor/"&gt;Project Reactor&lt;/a&gt;. &lt;a href="https://github.com/rsocket/rsocket-java"&gt;Facebook&lt;/a&gt; developed the Java client for their RSocket protocol using Project Reactor. Project Reactor is mature - it&amp;rsquo;s been around since 2010! - but growing new features all the time. If you&amp;rsquo;re &lt;em&gt;still&lt;/em&gt; not getting what you need, it works flawlessly with other reactive data flow libraries through the interoperable &lt;a href="http://www.reactive-streams.org/"&gt;Reactive Streams&lt;/a&gt; types. &lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s look at an example of how Project Reactor makes short work of the composition of different data flow sources and sinks and all but eliminates any manual threading code. This is a &lt;em&gt;huge&lt;/em&gt; win. Remember: only one person &lt;em&gt;truly&lt;/em&gt; understands how to write safe, useful, multithreaded Java code&amp;hellip;. and it&amp;rsquo;s &lt;em&gt;not&lt;/em&gt; you! I don&amp;rsquo;t know &lt;em&gt;who&lt;/em&gt; it is. It doesn&amp;rsquo;t matter. Don&amp;rsquo;t tempt fate; let Project Reactor help. &lt;/p&gt;
+&lt;p&gt;You&amp;rsquo;ll need the following dependencies. &lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Reactive Web on &lt;a href="http://start.spring.io"&gt;the Spring Initializr&lt;/a&gt; - &lt;code&gt;org.springframework.boot&lt;/code&gt; : &lt;code&gt;spring-boot-starter-webflux&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now, let&amp;rsquo;s look at a sample. This example demonstrates how easy it is to normalize processing given disparate kinds of data. In this example, we look at a Java 8 &lt;code&gt;java.util.Stream&amp;lt;T?&amp;gt;&lt;/code&gt; and a &lt;code&gt;CompletableFuture&amp;lt;T&amp;gt;&lt;/code&gt;, but the sky&amp;rsquo;s the limit. In most reactive applications, you won&amp;rsquo;t necessarily be in the business of converting non-reactive types to reactive types (like &lt;code&gt;Flux&amp;lt;T&amp;gt;&lt;/code&gt; or &lt;code&gt;Mono&amp;lt;T&amp;gt;&lt;/code&gt;). Those examples would be even more straightforward. This example assumes that you&amp;rsquo;ve got two data sources and need to compose them. &lt;/p&gt;
+&lt;pre&gt;&lt;code class="prettyprint java"&gt;package bootiful.rx;&#xD;
+&#xD;
+import org.springframework.boot.SpringApplication;&#xD;
+import org.springframework.boot.autoconfigure.SpringBootApplication;&#xD;
+import org.springframework.boot.context.event.ApplicationReadyEvent;&#xD;
+import org.springframework.context.ApplicationListener;&#xD;
+import org.springframework.context.annotation.Bean;&#xD;
+import reactor.core.publisher.Flux;&#xD;
+import reactor.core.publisher.Mono;&#xD;
+&#xD;
+import java.util.concurrent.CompletableFuture;&#xD;
+import java.util.stream.Stream;&#xD;
+&#xD;
+@SpringBootApplication&#xD;
+public class BootifulApplication {&#xD;
+&#xD;
+	CompletableFuture&amp;lt;String&amp;gt; returnCompletableFuture(int counter) {&#xD;
+		return CompletableFuture.supplyAsync(() -&amp;gt; {&#xD;
+			var start = System.currentTimeMillis();&#xD;
+			try {&#xD;
+				Thread.sleep((long) (Math.max((Math.random() * 10), 5) * 1000));&#xD;
+			}&#xD;
+			catch (InterruptedException e) {&#xD;
+				// threads smdh&#xD;
+			}&#xD;
+			var stop = System.currentTimeMillis();&#xD;
+			var delta = stop - start;&#xD;
+			return &amp;quot;(&amp;quot; + Thread.currentThread().getName() + &amp;quot;) Hello, #&amp;quot; + counter + &amp;quot;! (after &amp;quot; + delta + &amp;quot; ms.)&amp;quot;;&#xD;
+		});&#xD;
+	}&#xD;
+&#xD;
+	Stream&amp;lt;Integer&amp;gt; returnStream() {&#xD;
+		return Stream.iterate(0, integer -&amp;gt; integer + 1);&#xD;
+	}&#xD;
+&#xD;
+	@Bean&#xD;
+	ApplicationListener&amp;lt;ApplicationReadyEvent&amp;gt; begin() {&#xD;
+		return event -&amp;gt; {&#xD;
+&#xD;
+			Flux&amp;lt;String&amp;gt; count = Flux//&#xD;
+					.fromStream(this.returnStream()) //&#xD;
+					.take(10) //&#xD;
+					.flatMap(c -&amp;gt; Flux.zip(Mono.just(c), Mono.fromCompletionStage(this.returnCompletableFuture(c)))) //&#xD;
+					.map(tuple -&amp;gt; tuple.getT2() + &amp;quot; #&amp;quot; + tuple.getT1()); //&#xD;
+&#xD;
+			count.subscribe(System.out::println);&#xD;
+		};&#xD;
+	}&#xD;
+&#xD;
+	public static void main(String[] args) {&#xD;
+		SpringApplication.run(BootifulApplication.class, args);&#xD;
+	}&#xD;
+&#xD;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Do you know what else you get with Reactor? Operators supporting retries, error handling, timeouts, etc., all of which you would also farm out to yet another third-party library if they weren&amp;rsquo;t included in Project Reactor. Win-win. &lt;/p&gt;
+&lt;p&gt;I could go on and on about the opportunities that present themselves given something like Project Reactor. Indeed, I &lt;em&gt;did&lt;/em&gt;. Check out my book &lt;a href="http://ReactiveSpring.io"&gt;&lt;em&gt;Reactive Spring&lt;/em&gt;&lt;/a&gt; for (a lot) more. &lt;/p&gt;
+&lt;p&gt;Well? Did you have fun, and maybe learn something? As always, I&amp;rsquo;m keen on hearing from you, so &lt;a href="http://twitter.com/starbuxman"&gt;please sound off on Twitter (@starbuxman) &lt;/a&gt;! I&amp;rsquo;ll be back with another installment of &lt;em&gt;YMNNALFT&lt;/em&gt; later this week, so be sure not to miss that. I&amp;rsquo;ve got installments on, among other things, Easy RPC, The Garden of &lt;code&gt;*Utils&lt;/code&gt; objects, Dimensional Metrics with Micrometer, and many, many more topics. &lt;/p&gt;
+&lt;!-- rendered by Sagan Renderer Service --&gt;</content>
+  </entry>
+  <entry>
+    <title>This Week in Spring, January 5th, 2020 - 10th Anniversary Edition</title>
+    <link rel="alternate" href="https://spring.io/blog/2021/01/05/this-week-in-spring-january-5th-2020-10th-anniversary-edition" />
+    <category term="engineering" label="Engineering" />
+    <author>
+      <name>Josh Long</name>
+    </author>
+    <id>tag:spring.io,2021-01-05:4328</id>
+    <updated>2021-01-05T21:10:37Z</updated>
+    <content type="html">&lt;p&gt;Hi, Spring fans! Happy new year! And welcome to another installment of &lt;em&gt;This Week in Spring&lt;/em&gt;! Today is a significant installment because it marks a decade of &lt;em&gt;This Week in Spring&lt;/em&gt;! &lt;/p&gt;
+&lt;p&gt;I started this roundup after a fun discussion with the legendarily nice guy and SpringSource co-founder Keith Donald in late 2010 over the holiday. Lo, the first &lt;a href="http://web.archive.org/web/20110107071916/http://www.springsource.org/node/2986"&gt;week of January 2011&lt;/a&gt;, the first edition of this roundup went out the door on the old SpringSource.org blog. &lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s been so much fun putting together this roundup, without fail, every Tuesday for the last decade. You wouldn&amp;rsquo;t believe the lengths to which I went to get this out on Tuesday, well, &lt;em&gt;my&lt;/em&gt; Tuesday, no matter where I was. I&amp;rsquo;d be on planes all the time and the original blog software on SpringSource.org didn&amp;rsquo;t support scheduling posts, so I&amp;rsquo;d either publish it a little early or - if I was going to be on a plane for the entirety of the useful day - I&amp;rsquo;d have my then manager &lt;a href="https://twitter.com/devrelchap"&gt;Adam Fitzgerald&lt;/a&gt; post it for me. He reviewed the content for the first few years of the blog, too. What a legend that guy is. I learned a ton (about everything really, but also writing in particular) working with him. Nowadays, most flights longer than an hour or two have wi-fi onboard; but not so back then. Nowadays the software we use to blog - custom, open-source software that we built with Spring back in 2013 that underpins the &lt;a href="https://github.com/spring-io/sagan"&gt;spring.io&lt;/a&gt;) experience - supports scheduled posts, as well, so it&amp;rsquo;s much easier to get this post out on time. &lt;/p&gt;
+&lt;p&gt;This Week in Spring has two other variants: &lt;em&gt;This Month in Spring&lt;/em&gt; is an email digest that goes out once a month; go to the blog page and find the &lt;a href="http://spring.io/blog"&gt;&lt;em&gt;Get the Spring Newsletter&lt;/em&gt;&lt;/a&gt; sign up form to get that digest. &lt;em&gt;This Year in Spring&lt;/em&gt; goes out as the last post of any given year, right here on the blog. &lt;/p&gt;
+&lt;p&gt;I love this roundup because it&amp;rsquo;s a constant, and much appreciated, reminder of just how vibrant this community is. Thank you, as usual, Spring fans, and here&amp;rsquo;s to another decade (at least) of &lt;em&gt;This Week in Spring&lt;/em&gt;!&lt;/p&gt;
+&lt;p&gt;Now, we&amp;rsquo;ve got a ton to get to this week so let&amp;rsquo;s get into it. &lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Before we move forward, I&amp;rsquo;d like to briefly look back. 2020 had its share of struggles, generally, but Spring itself and its ambient communities continued to grow at breakneck speeds. Let&amp;rsquo;s look at the year that was in &lt;a href="https://spring.io/blog/2020/12/31/this-year-in-spring-2020-edition"&gt;&lt;em&gt;This Year in Spring - 2020 Edition&lt;/em&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://twitter.com/prattm/status/1344719453767008257?s=21"&gt;&amp;quot;Thanks for the reminder there was some good in 2020 @starbuxman! We successfully migrated @PedalPalApp to Kubernetes this year, and it was pretty simple with Spring Boot&amp;rsquo;s cloud-native support &#x1f60e; &lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://spring.io/blog/2020/12/31/a-bootiful-podcast-google-cloud-s-daniel-zou-on-spring-cloud-gcp-teaching-the-youths-and-happy-new-year"&gt;A Bootiful Podcast: Google Cloud&amp;rsquo;s Daniel Zou on Spring Cloud GCP, teaching the youths, and Happy New Year!&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://github.com/Cosium/spring-data-jpa-entity-graph"&gt;Spring Data JPA extension allowing full dynamic usage of EntityGraph on repositories&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://www.infoq.com/presentations/measuring-service-level-objectives/?itm_source=infoq&amp;itm_medium=videos_homepage&amp;itm_campaign=videos_row1"&gt;Cultivating Production Excellence&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://blog.frankel.ch/feedback-log4j2-hack-spring-boot/"&gt;Feedback on the Log4J2 hack in Spring Boot&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://itmodel4dnadamagerepair.blogspot.com/"&gt;IT Model for DNA Damage Repair&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://github.com/arttom/cqs-spring-boot-starter"&gt;Interesting! A third party library to allow people to easily follow CQS principles in Spring Boot.&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://github.com/qaware/openapi-generator-for-spring"&gt;Interesting: Open API v3 Generator for Spring Boot applications&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://www.mitchellbosecke.com/post/java-proxies-from-dog-to-transactionaldog"&gt;Java Proxies: From &lt;code&gt;Dog&lt;/code&gt; to &lt;code&gt;TransactionalDog&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://sizovs.net/2020/11/24/java-libraries-i-like/"&gt;Java libraries I like – Eduards Sizovs&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://www.javaadvent.com/2020/12/resilient-applications-spring-resilience4j.html"&gt;Resilient applications with Spring and Resilience4J - JVM Advent&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://piotrminkowski.com/2019/12/06/spring-boot-best-practices-for-microservices/"&gt;Spring Boot Best Practices for Microservices - Piotr&amp;rsquo;s TechBlog&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://www.youtube.com/watch?v=8sgi_xs5opw&amp;feature=share"&gt;This is a neat introduction to Spring Data JPA&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;This isn&amp;rsquo;t, strictly speaking, Spring related, but it&amp;rsquo;s interesting. It&amp;rsquo;s an API to fluidly build up regular expressions. &lt;a href="https://github.com/VerbalExpressions/JavaVerbalExpressions"&gt;VerbalExpressions/JavaVerbalExpressions: Java regular expressions made easy.&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="https://www.reddit.com/r/java/comments/khflbg/what_courses_both_free_and_paid_on_spring_boot/"&gt;What courses (both free and paid) on Spring Boot would you recommend? : java&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;!-- rendered by Sagan Renderer Service --&gt;</content>
+  </entry>
+  <entry>
+    <title>YMNNALFT: Easy Docker Image Creation with the Spring Boot Maven Plugin and Buildpacks</title>
+    <link rel="alternate" href="https://spring.io/blog/2021/01/04/ymnnalft-easy-docker-image-creation-with-the-spring-boot-maven-plugin-and-buildpacks" />
+    <category term="engineering" label="Engineering" />
+    <author>
+      <name>Josh Long</name>
+    </author>
+    <id>tag:spring.io,2020-12-30:4315</id>
+    <updated>2021-01-04T12:00:00Z</updated>
+    <content type="html">&lt;p&gt;Welcome to another installment of &lt;em&gt;You May Not Need Another Library For That&lt;/em&gt; (&lt;code&gt;#YMNNALFT&lt;/code&gt;)! I&amp;rsquo;ve spent a lot of time since 2016 illuminating (or trying to, anyway!) some of the more enormous opportunities in the Spring ecosystem in &lt;a href="http://bit.ly/spring-tips-playlist"&gt;my Spring Tips videos&lt;/a&gt;. Today, however, I come to you in a different spirit, wanting to focus on the little, sometimes hidden, gems that do fantastic things and that might spare you an additional third-party dependency and its implied complexity. &lt;/p&gt;
+&lt;p&gt;Have you tried out &lt;a href="https://paketo.io"&gt;Paketo&lt;/a&gt;? It&amp;rsquo;s neat-o! It alleviates one of the biggest pains of cloudy software these days:&lt;a href="https://docs.docker.com/engine/reference/builder/"&gt;Dockerfiles&lt;/a&gt;. &lt;/p&gt;
+&lt;p&gt;As an aside: the &lt;em&gt;biggest&lt;/em&gt; pain point is, of course, YAML. YAML is why people leave IT! YAML: when you want the indentation-sensitive treachery of Python, with the nonexistent design-time validation of Python and &lt;em&gt;none&lt;/em&gt; of the benefits of Python. YAML: because life is, clearly, not hard enough. 9/10 dentists agree: YAML causes production rot!&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&amp;ldquo;Indeed it has been said that YAML is the best form of configuration except for all those other forms that have been tried from time to time.&amp;rdquo; - Not Winston Churchill &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;blockquote class="twitter-tweet"&gt;&lt;p lang="en" dir="ltr"&gt;No pressure debugging YAML ;) &lt;a href="https://t.co/vwCCYKTZY2"&gt;pic.twitter.com/vwCCYKTZY2&lt;/a&gt;&lt;/p&gt;&amp;mdash; Arun Gupta (@arungupta) &lt;a href="https://twitter.com/arungupta/status/1340676192588890112?ref_src=twsrc%5Etfw"&gt;December 20, 2020&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;&lt;/p&gt;
+&lt;p&gt;Aaaanyway, YAML is a whole, other, &amp;ldquo;Oprah,&amp;rdquo; and we just don&amp;rsquo;t have a ton of time to get into it, so let&amp;rsquo;s move on: we want to simplify the creation of Dockerfiles. Dockerfiles are tedious and they require us to re-specify the complete environment required to run our applications in production. It&amp;rsquo;s possible to get something working in a fairly minimal number of lines, but as I learned while avoiding the COVID-19 virus, &amp;ldquo;minimal&amp;rdquo; is not &amp;ldquo;none!&amp;rdquo; And besides, something working does not a production environment make. We can do better.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://paketo.io/"&gt;Paketo&lt;/a&gt; is a Cloud Foundry foundation project based on the &lt;a href="https://buildpacks.io/"&gt;buildpacks project&lt;/a&gt; from &lt;a href="https://www.cncf.io/"&gt;CNCF&lt;/a&gt; (which stands for &amp;ldquo;Code Never Comes Finished,&amp;rdquo; or maybe it was &amp;ldquo;Common Network Code Foundation,&amp;rdquo; or was it &amp;ldquo;Cloud Native Computing Foundation&amp;rdquo;?). From the website: &amp;ldquo;buildpacks transform your application source code to images that can run on any cloud. Paketo Buildpacks provide language runtime support for applications. They leverage the Cloud Native Buildpacks framework to make image builds easy, performant, and secure.&amp;rdquo; Basically: application in; container out. See? Neat!&lt;/p&gt;
+&lt;p&gt;Buildpacks come from the Heroku and Cloud Foundry Platform-as-a-service offerings. You give the buildpack an application artifact (like, say, a Java &lt;code&gt;.jar&lt;/code&gt;), and the buildpack gives you back your application in a container. More specifically, it&amp;rsquo;ll create a sensible filesystem containing your application artifact and everything needed to run that application artifact. So, given a &lt;code&gt;.jar&lt;/code&gt;, it might create a filesystem with a JVM configured with reasonable memory bounds and any required Java agents configured. All of &lt;em&gt;that&lt;/em&gt; is what eventually gets turned into a container. You&amp;rsquo;d be &lt;em&gt;shocked&lt;/em&gt; what you can get containerized with virtually no configuration at all! Buildpacks work because, no matter how much we may protest, most applications aren&amp;rsquo;t special. A &lt;code&gt;.jar&lt;/code&gt; is a &lt;code&gt;.jar&lt;/code&gt; for everybody, and a Node.js/NPM project builds the same for everybody. Buildpacks support several different languages and runtime (way too many to name). You can use the Paketo CLI to make short work of containerizing various applications, like this: &lt;code&gt;pack build .&lt;/code&gt;. &lt;/p&gt;
+&lt;p&gt;Or, anyway, that&amp;rsquo;s what you &lt;em&gt;would&lt;/em&gt; do if you were not using &lt;a href="https://docs.spring.io/spring-boot/docs/2.4.1/maven-plugin/reference/htmlsingle/#build-image"&gt;Spring Boot 2.3 or later&lt;/a&gt;. But, you are, _ aren&amp;rsquo;t you_? Buildpack support is now in the Spring Boot build plugins themselves. &lt;/p&gt;
+&lt;p&gt;If you were using Maven, you could type the following incantation: &lt;/p&gt;
+&lt;pre&gt;&lt;code class="prettyprint"&gt;./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=bootiful/demo
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you were using Gradle, you could type the following incantation: &lt;/p&gt;
+&lt;pre&gt;&lt;code class="prettyprint"&gt;./gradlew bootBuildImage --imageName=bootiful/demo
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Stand back for a minute while it does all the work. It&amp;rsquo;ll dump out the Docker image at the end of its work. You can then &lt;code&gt;docker tag&lt;/code&gt; and then &lt;code&gt;docker push&lt;/code&gt; that image to your container registry of choice (&lt;a href="https://goharbor.io/"&gt;VMware Harbor&lt;/a&gt;, &lt;a href="https://cloud.google.com/container-registry/"&gt;Google Container Registry&lt;/a&gt;, &lt;a href="https://jfrog.com/container-registry/"&gt;JFrog Container Registry&lt;/a&gt;, &lt;a href="https://hub.docker.com/"&gt;DockerHub&lt;/a&gt;, etc.). &lt;/p&gt;
+&lt;p&gt;Do you want to take that to production? That&amp;rsquo;s pretty trivial, too! Here&amp;rsquo;s the right incantation for Kubernetes, assuming your image is on Google Container Registry, has an artifact ID of &lt;code&gt;demo&lt;/code&gt;. The version specified in &lt;code&gt;pom.xml&lt;/code&gt; becomes a tag for the version of the container, too.&lt;/p&gt;
+&lt;pre&gt;&lt;code class="prettyprint"&gt;kubectl create deployment demo --image=gcr.io/bootiful/demo
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Hopefully, this is enough to get you to production without so much as even having to configure something like Jib or the Spotify Maven plugin or crafting a long, byzantine shell script to do the &lt;code&gt;docker build&lt;/code&gt; itself. Now, don&amp;rsquo;t get me wrong. You &lt;em&gt;might&lt;/em&gt; still need to create your own `Dockerfile&amp;rsquo;s for whatever reason, as you might have something to say about the ordering or contents of particular layers, and if so, then Spring Boot &lt;a href="https://docs.spring.io/spring-boot/docs/2.4.1/maven-plugin/reference/htmlsingle/#build-image-customization"&gt;has your back here&lt;/a&gt;, too. &lt;/p&gt;
+&lt;p&gt;Alright, that&amp;rsquo;s more than enough to get going. Go to the &lt;a href="http://start.Spring.io"&gt;Spring Initializr&lt;/a&gt; (my second favorite place on the internet, &lt;em&gt;after&lt;/em&gt; production) and generate a new project and take your containerized application to the platform of your choice. &lt;/p&gt;
+&lt;p&gt;Did you like this gem at a glance approach? Did you learn anything? As always, I&amp;rsquo;m keen on hearing from you, so &lt;a href="http://twitter.com/starbuxman"&gt;please sound off on Twitter (@starbuxman) &lt;/a&gt;! I&amp;rsquo;ll be back with another installment of &lt;em&gt;YMNNALFT&lt;/em&gt; later this week, so be sure not to miss that. I&amp;rsquo;ve got installments on, among other things, Easy RPC, The Garden of &lt;code&gt;*Utils&lt;/code&gt; objects, Dimensional Metrics with Micrometer, and many, many more topics. &lt;/p&gt;
+&lt;!-- rendered by Sagan Renderer Service --&gt;</content>
+  </entry>
   <entry>
     <title>A Bootiful Podcast: Google Cloud's Daniel Zou on Spring Cloud GCP, teaching the youths, and Happy New Year!</title>
     <link rel="alternate" href="https://spring.io/blog/2020/12/31/a-bootiful-podcast-google-cloud-s-daniel-zou-on-spring-cloud-gcp-teaching-the-youths-and-happy-new-year" />
@@ -2549,129 +2701,6 @@ You can open the Prometheus UI at &lt;a href="http://localhost:9090"&gt;http://l
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;!-- rendered by Sagan Renderer Service --&gt;</content>
-  </entry>
-  <entry>
-    <title>Spring Statemachine 3.0.0-RC1 Released</title>
-    <link rel="alternate" href="https://spring.io/blog/2020/12/11/spring-statemachine-3-0-0-rc1-released" />
-    <category term="releases" label="Releases" />
-    <author>
-      <name>Janne Valkealahti</name>
-    </author>
-    <id>tag:spring.io,2020-12-05:4286</id>
-    <updated>2020-12-11T12:25:46Z</updated>
-    <content type="html">&lt;p&gt;Yes, we&amp;rsquo;re going reactive!&lt;/p&gt;
-&lt;p&gt;On behalf of the team and everyone that contributed, I am pleased to announce that the first release candidate of Spring Statemachine 3.0.0 has been released and is available from &lt;a href="https://repo.spring.io/milestone/"&gt;our milestone repository&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Highlights of this release include:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Relevant api&amp;rsquo;s working with statemachine now have reactive methods.&lt;/li&gt;
-  &lt;li&gt;From a functional point of view this release is equivalent what&amp;rsquo;s in&lt;br/&gt; &lt;code&gt;2.2.x&lt;/code&gt;, &lt;code&gt;2.3.x&lt;/code&gt; and &lt;code&gt;2.4.x&lt;/code&gt; branches apart from reactive changes.&lt;/li&gt;
-  &lt;li&gt;We&amp;rsquo;ve chosen to align with recently released Spring Boot 2.4.1.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Internally everything is basically working atop of reactive concepts while we still keep old style methods around for blocking world. Plan is to see if and when it&amp;rsquo;s possible to phase out from a blocking world. Now few words about new api&amp;rsquo;s.&lt;/p&gt;
-&lt;p&gt;With good ol&amp;rsquo; blocking world you simple send an event and statemachine returns a boolean flag if event is accepted.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;StateMachine&amp;lt;String, String&amp;gt; stateMachine;&#xD;
-&#xD;
-boolean accepted = stateMachine.sendEvent(&amp;quot;event1&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;One slightly annoying thing were that you couldn&amp;rsquo;t differentiate between cases where event were accepted(event caused a transition), denied(interceptor error or no possible transition) or deferred(in case machine config used deferred events). We chose to enrich what gets returned from event handling methods.&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;StateMachine&amp;lt;String, String&amp;gt; stateMachine;&#xD;
-&#xD;
-Mono&amp;lt;StateMachineEventResult&amp;lt;String, String&amp;gt;&amp;gt; result = stateMachine&#xD;
-  .sendEvent(Mono.just(MessageBuilder.withPayload(&amp;quot;event1&amp;quot;).build()));&#xD;
-&#xD;
-result.subscribe();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Firstly, one obvious thing as you probably guessed if being familiar with Reactor is that nothing happens until you subscribe to a returned &lt;code&gt;Mono&lt;/code&gt;, secondly returned type within &lt;code&gt;Mono&lt;/code&gt; is a &lt;code&gt;StateMachineEventResult&lt;/code&gt; which contains more info about what happened with an event handling.&lt;/p&gt;
-&lt;p&gt;What about &lt;code&gt;Flux&lt;/code&gt;, well simply pass in a flux and get a flux and handle it whatever you can do in a Reactor!&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;StateMachine&amp;lt;String, String&amp;gt; stateMachine;&#xD;
-&#xD;
-Message&amp;lt;String&amp;gt; message1 = MessageBuilder.withPayload(&amp;quot;event1&amp;quot;).build();&#xD;
-Message&amp;lt;String&amp;gt; message2 = MessageBuilder.withPayload(&amp;quot;event2&amp;quot;).build();&#xD;
-&#xD;
-Flux&amp;lt;StateMachineEventResult&amp;lt;String, String&amp;gt;&amp;gt; results = stateMachine&#xD;
-  .sendEvents(Flux.just(message1, message2));&#xD;
-&#xD;
-results.subscribe();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;What about actions as your main work with a statemachine happens there? Original blocking signature is:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;public interface Action&amp;lt;S, E&amp;gt; {&#xD;
-  void execute(StateContext&amp;lt;S, E&amp;gt; context);&#xD;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;New &lt;code&gt;ReactiveAction&lt;/code&gt; is simply a java&amp;rsquo;s &lt;code&gt;Function&lt;/code&gt; with types &lt;code&gt;StateContext&amp;lt;S, E&amp;gt;&lt;/code&gt; and &lt;code&gt;Mono&amp;lt;Void&amp;gt;&lt;/code&gt;:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;public interface ReactiveAction&amp;lt;S, E&amp;gt;&#xD;
-  extends Function&amp;lt;StateContext&amp;lt;S, E&amp;gt;, Mono&amp;lt;Void&amp;gt;&amp;gt; {}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Which translates to&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;class MyAction implements ReactiveAction&amp;lt;String, String&amp;gt; {&#xD;
-  @Override&#xD;
-  public Mono&amp;lt;Void&amp;gt; apply(StateContext&amp;lt;String, String&amp;gt; context) {&#xD;
-      return Mono.empty();&#xD;
-  }&#xD;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With configuration:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;@Configuration&#xD;
-@EnableStateMachine&#xD;
-public class StateMachineConfig extends StateMachineConfigurerAdapter&amp;lt;String, String&amp;gt; {&#xD;
-&#xD;
-  @Override&#xD;
-  public void configure(StateMachineStateConfigurer&amp;lt;String, String&amp;gt; states)&#xD;
-      throws Exception {&#xD;
-    states&#xD;
-      .withStates()&#xD;
-      .initial(&amp;quot;state1&amp;quot;)&#xD;
-      .state(&amp;quot;state2&amp;quot;);&#xD;
-  }&#xD;
-&#xD;
-  @Override&#xD;
-  public void configure(StateMachineTransitionConfigurer&amp;lt;String, String&amp;gt; transitions)&#xD;
-      throws Exception {&#xD;
-    transitions&#xD;
-      .withExternal()&#xD;
-        .source(&amp;quot;state1&amp;quot;).target(&amp;quot;state2&amp;quot;)&#xD;
-        .actionFunction(context -&amp;gt; Mono.fromRunnable(() -&amp;gt; {&#xD;
-          System.out.println(&amp;quot;HI&amp;quot;);&#xD;
-        }));&#xD;
-  }&#xD;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Or &lt;em&gt;action&lt;/em&gt; as &lt;code&gt;Function&lt;/code&gt; definition in a normal way:&lt;/p&gt;
-&lt;pre&gt;&lt;code class="prettyprint java"&gt;Function&amp;lt;StateContext&amp;lt;String, String&amp;gt;, Mono&amp;lt;Void&amp;gt;&amp;gt; action =&#xD;
-  context -&amp;gt; Mono.empty();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;a href="https://spring.io/projects/spring-statemachine"&gt;Project Page&lt;/a&gt; | &lt;a href="https://github.com/spring-projects/spring-statemachine"&gt;GitHub&lt;/a&gt; | &lt;a href="https://github.com/spring-projects/spring-statemachine/issues"&gt;Issues&lt;/a&gt; | &lt;a href="https://docs.spring.io/spring-statemachine/docs/3.0.0-RC1/reference/"&gt;Documentation&lt;/a&gt;&lt;/p&gt;
-&lt;!-- rendered by Sagan Renderer Service --&gt;</content>
-  </entry>
-  <entry>
-    <title>Spring Boot 2.4.1 available now</title>
-    <link rel="alternate" href="https://spring.io/blog/2020/12/11/spring-boot-2-4-1-available-now" />
-    <category term="releases" label="Releases" />
-    <author>
-      <name>Stéphane Nicoll</name>
-    </author>
-    <id>tag:spring.io,2020-12-11:4299</id>
-    <updated>2020-12-11T08:26:35Z</updated>
-    <content type="html">&lt;p&gt;On behalf of the team and everyone who has contributed, I&amp;rsquo;m happy to announce that Spring Boot 2.4.1 has been released and is now available from Maven Central.&lt;/p&gt;
-&lt;p&gt;This release includes &lt;a href="https://github.com/spring-projects/spring-boot/releases/tag/v2.4.1"&gt;59 bug fixes, documentation improvements, and dependency upgrades&lt;/a&gt;. Thanks to all those who have contributed with issue reports and pull requests.&lt;/p&gt;&lt;h3&gt;&lt;a href="#how-can-you-help" class="anchor" name="how-can-you-help"&gt;&lt;/a&gt;How can you help?&lt;/h3&gt;
-&lt;p&gt;If you&amp;rsquo;re interested in helping out, check out the &lt;a href="https://github.com/spring-projects/spring-boot/labels/status%3A%20ideal-for-contribution"&gt;&amp;ldquo;ideal for contribution&amp;rdquo; tag&lt;/a&gt; in the issue repository. If you have general questions, please ask on &lt;a href="http://stackoverflow.com"&gt;stackoverflow.com&lt;/a&gt; using the &lt;a href="http://stackoverflow.com/tags/spring-boot"&gt;&lt;code&gt;spring-boot&lt;/code&gt; tag&lt;/a&gt; or chat with the community on &lt;a href="https://gitter.im/spring-projects/spring-boot"&gt;Gitter&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://spring.io/projects/spring-boot/"&gt;Project Page&lt;/a&gt; | &lt;a href="https://github.com/spring-projects/spring-boot"&gt;GitHub&lt;/a&gt; | &lt;a href="https://github.com/spring-projects/spring-boot/issues"&gt;Issues&lt;/a&gt; | &lt;a href="http://docs.spring.io/spring-boot/docs/2.4.1/reference/html"&gt;Documentation&lt;/a&gt; | &lt;a href="http://stackoverflow.com/questions/tagged/spring-boot"&gt;Stack Overflow&lt;/a&gt; | &lt;a href="https://gitter.im/spring-projects/spring-boot"&gt;Gitter&lt;/a&gt;&lt;/p&gt;
-&lt;!-- rendered by Sagan Renderer Service --&gt;</content>
-  </entry>
-  <entry>
-    <title>Spring Boot 2.3.7 available now</title>
-    <link rel="alternate" href="https://spring.io/blog/2020/12/11/spring-boot-2-3-7-available-now" />
-    <category term="releases" label="Releases" />
-    <author>
-      <name>Stéphane Nicoll</name>
-    </author>
-    <id>tag:spring.io,2020-12-11:4298</id>
-    <updated>2020-12-11T07:05:56Z</updated>
-    <content type="html">&lt;p&gt;On behalf of the team and everyone who has contributed, I&amp;rsquo;m happy to announce that Spring Boot 2.3.7 has been released and is now available from Maven Central.&lt;/p&gt;
-&lt;p&gt;This release includes &lt;a href="https://github.com/spring-projects/spring-boot/releases/tag/v2.3.7.RELEASE"&gt;35 bug fixes, documentation improvements, and dependency upgrades&lt;/a&gt;. Thanks to all those who have contributed with issue reports and pull requests.&lt;/p&gt;&lt;h3&gt;&lt;a href="#how-can-you-help" class="anchor" name="how-can-you-help"&gt;&lt;/a&gt;How can you help?&lt;/h3&gt;
-&lt;p&gt;If you&amp;rsquo;re interested in helping out, check out the &lt;a href="https://github.com/spring-projects/spring-boot/labels/status%3A%20ideal-for-contribution"&gt;&amp;ldquo;ideal for contribution&amp;rdquo; tag&lt;/a&gt; in the issue repository. If you have general questions, please ask on &lt;a href="http://stackoverflow.com"&gt;stackoverflow.com&lt;/a&gt; using the &lt;a href="http://stackoverflow.com/tags/spring-boot"&gt;&lt;code&gt;spring-boot&lt;/code&gt; tag&lt;/a&gt; or chat with the community on &lt;a href="https://gitter.im/spring-projects/spring-boot"&gt;Gitter&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://spring.io/projects/spring-boot/"&gt;Project Page&lt;/a&gt; | &lt;a href="https://github.com/spring-projects/spring-boot"&gt;GitHub&lt;/a&gt; | &lt;a href="https://github.com/spring-projects/spring-boot/issues"&gt;Issues&lt;/a&gt; | &lt;a href="http://docs.spring.io/spring-boot/docs/2.3.7.RELEASE/reference/html"&gt;Documentation&lt;/a&gt; | &lt;a href="http://stackoverflow.com/questions/tagged/spring-boot"&gt;Stack Overflow&lt;/a&gt; | &lt;a href="https://gitter.im/spring-projects/spring-boot"&gt;Gitter&lt;/a&gt;&lt;/p&gt;
 &lt;!-- rendered by Sagan Renderer Service --&gt;</content>
   </entry>
 </feed>
